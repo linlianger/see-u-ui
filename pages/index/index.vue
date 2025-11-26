@@ -10,14 +10,19 @@
 <script lang="ts" setup>
 	import { ref } from 'vue'
 	
-	const list = ref([
+	type ItemType = {
+		title: string;
+		url: string;
+	}
+	
+	const list = ref<ItemType[]>([
 		{
 			title: '按钮',
 			url: '/pages/seeButton/index'
 		}
 	])
 	
-	const clickItem = (item) => uni.navigateTo({
+	const clickItem = (item: ItemType) => uni.navigateTo({
 		url: item.url
 	})
 </script>

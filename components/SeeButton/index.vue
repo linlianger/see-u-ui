@@ -5,7 +5,10 @@
 	<!-- #ifndef H5 -->
 	<view :id="seeButtonId" class="see-button" :class="itemClass" @tap="onTap" @touchstart="onTouchstart($event)">
 	<!-- #endif -->
-		<slot></slot>
+		<!-- <slot></slot> -->
+		<view class="test">
+			asd
+		</view>
 		<view
 			class="see-button-ripple"
 			:class="{ 'active': active }"
@@ -22,14 +25,16 @@
 
 <script lang="ts" setup>
 import { ref, nextTick, getCurrentInstance } from 'vue'
+import type { TouchEvent, ClientRectData } from './type'
 
 let globalId = 0
+const instance = getCurrentInstance()
 
 /** ---------- props ---------- */
 const props = withDefaults(
   defineProps<{
-    rippleColor?: string
-    itemClass?: string
+	  rippleColor?: string
+	  itemClass?: string
   }>(),
   {
     rippleColor: 'rgba(0, 0, 0, .15)',
@@ -50,23 +55,16 @@ const active = ref(false)
 const field = ref<any>({})
 const seeButtonId = 'seeButton_' + globalId
 
-/** 获取当前实例，用于 createSelectorQuery().in(this) */
-const instance = getCurrentInstance()
-
 /** ---------- methods ---------- */
-function onTap() {
-  emit('onTap')
-}
+const onTap = () => emit('onTap')
 
-function onTouchstart(e: any) {
+const onTouchstart = (e: any) => {
   active.value = false
-  nextTick(() => {
-    activeWaves(e)
-  })
+  nextTick(() => activeWaves(e))
 }
 
-function activeWaves(e: any) {
-  getClientRect().then((data: any) => {
+const activeWaves = (e: TouchEvent) => {
+  getClientRect().then((data: ClientRectData) => {
     if (!data?.height) return
 
     data.finalWidth = data.height > data.width ? data.height : data.width
@@ -95,13 +93,11 @@ function activeWaves(e: any) {
     rippleTop.value = touchesY - data.top - data.finalWidth / 2
     rippleLeft.value = touchesX - data.left - data.finalWidth / 2
 
-    nextTick(() => {
-      active.value = true
-    })
+    nextTick(() => active.value = true)
   })
 }
 
-function getClientRect() {
+const getClientRect = () => {
   return new Promise(resolve => {
     const query = uni.createSelectorQuery().in(instance)
     const id = '#' + seeButtonId
