@@ -3,11 +3,6 @@
 </template>
 
 <script lang="ts">
-export default {
-  name: 'SeeLink'
-}
-</script>
-<script lang="ts" setup>
 /**
  * Link 链接
  * @description 此组件基于uniapp官方button，进行二次封装
@@ -20,8 +15,13 @@ export default {
  * @property {Boolean}												isLine			是否添加下划线（默认false）
  * @property {String}												lineColor		下划线颜色（填写此字段后type失效）
  *
- * @example 
+ * @example
  */
+export default {
+	name: 'SeeLink'
+};
+</script>
+<script lang="ts" setup>
 import { nextTick, computed } from 'vue';
 
 /** ---------- props ---------- */
@@ -49,7 +49,6 @@ const emit = defineEmits<{
 	(e?: 'onClick'): void;
 }>();
 
-
 const getClass = computed(() => {
 	const classes: string[] = [];
 	// 当没有自定义颜色时，应用 type 类型 (primary/error/etc)
@@ -65,16 +64,16 @@ const getClass = computed(() => {
 
 const getStyle = computed(() => {
 	const style: Record<string, string> = {};
-	
+
 	if (props.color) {
 		style.color = props.color;
 	}
-	
+
 	// 如果有下划线且定义了下划线颜色，覆盖默认边框色
 	if (props.isLine && props.lineColor) {
 		style.borderBottomColor = props.lineColor;
 	}
-	
+
 	return style;
 });
 

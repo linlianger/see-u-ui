@@ -48,11 +48,6 @@
 </template>
 
 <script lang="ts">
-export default {
-  name: 'SeeButton'
-}
-</script>
-<script lang="ts" setup>
 /**
  * Button 按钮
  * @description 此组件基于uniapp官方button，进行二次封装
@@ -74,8 +69,13 @@ export default {
  * @property {Boolean}												isDisabled		是否禁用状态
  * @property {Number}												radius			圆角（默认4px）
  *
- * @example 
+ * @example
  */
+export default {
+	name: 'SeeButton'
+};
+</script>
+<script lang="ts" setup>
 import { ref, computed, nextTick, getCurrentInstance } from 'vue';
 import type { TouchEvent, ClientRectData, RippleItem } from './type';
 

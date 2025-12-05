@@ -12,7 +12,7 @@
 		<text v-if="props.mode === 'phone'" :class="getClass" :style="getStyle">
 			{{ props.text }}
 		</text>
-		
+
 		<!-- 金额 -->
 		<text v-if="props.mode === 'price'" :class="getClass" :style="getStyle">
 			{{ formatCurrency(props.text) }}
@@ -31,11 +31,6 @@
 </template>
 
 <script lang="ts">
-export default {
-  name: 'SeeText'
-}
-</script>
-<script lang="ts" setup>
 /**
  * Text 文本
  * @description 此组件基于uniapp官方button，进行二次封装
@@ -50,8 +45,13 @@ export default {
  * @property {String | Number | Date}										date			日期（时间戳格式）
  * @property {String}														dateFormat		日期格式（默认'YYYY-MM-DD'）
  *
- * @example 
+ * @example
  */
+export default {
+	name: 'SeeText'
+};
+</script>
+<script lang="ts" setup>
 import { computed, nextTick } from 'vue';
 import SeeLink from '../SeeLink/index.vue';
 import { formatDate } from '@/utils/hooks/useDateFormat';
