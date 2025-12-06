@@ -53,7 +53,7 @@ export default {
 </script>
 <script lang="ts" setup>
 import { computed, nextTick } from 'vue';
-import SeeLink from '../SeeLink/index.vue';
+import SeeLink from '../see-link/see-link.vue';
 import { formatDate } from '../../utils/hooks/useDateFormat';
 import { formatTimeAgo } from '../../utils/hooks/useTimeAgo';
 import { formatCurrency } from '../../utils/hooks/useCurrencyFormat';

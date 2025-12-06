@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import SeeLink from '@/components/SeeLink/index.vue';
+import SeeLink from '@/components/see-link/see-link.vue';
 </script>
 
 <style lang="scss" scoped>
