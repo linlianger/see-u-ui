@@ -1,4 +1,5 @@
 import App from "./App";
+import SeeYouUI from '@/uni_modules/see-u-ui'
 
 // #ifndef VUE3
 import Vue from "vue";
@@ -17,6 +18,7 @@ import {
 } from "vue";
 export function createApp() {
 	const app = createSSRApp(App);
+	app.use(SeeYouUI)
 	return {
 		app,
 	};

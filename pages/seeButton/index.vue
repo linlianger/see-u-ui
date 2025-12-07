@@ -55,7 +55,6 @@
 </template>
 
 <script lang="ts" setup>
-import SeeButton from '@/components/see-button/see-button.vue';
 
 const customStyle = {
 	width: '200px',

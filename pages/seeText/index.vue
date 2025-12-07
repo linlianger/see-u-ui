@@ -82,7 +82,6 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import SeeText from '@/components/see-text/see-text.vue';
 
 const currentTime = ref(new Date());
 let timer: ReturnType<typeof setInterval> | null = null;
