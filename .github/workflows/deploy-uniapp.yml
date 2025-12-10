@@ -26,11 +26,12 @@ jobs:
         run: |
           & ".\HBuilderX\HBuilderX\cli.exe" publish --platform h5 --project .\
 
-      - name: Wait 1 minute
-        run: Start-Sleep -Seconds 60
+      - name: Wait 2 minute
+        run: Start-Sleep -Seconds 120
 
       - name: Check build output
         run: dir
+
 
       # 4. 部署到服务器（使用 rsync）—— 保持不变
       - name: Deploy to server
