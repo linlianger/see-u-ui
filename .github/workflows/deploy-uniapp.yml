@@ -21,7 +21,7 @@ jobs:
 
       - name: Build UniApp H5
         shell: cmd
-        run: npm run build
+        run: npm run build:h5
 
       - name: List project files
         run: dir
