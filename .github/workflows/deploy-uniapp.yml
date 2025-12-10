@@ -33,7 +33,7 @@ jobs:
         run: Start-Sleep -Seconds 60
 
       - name: Check build output
-        run: dir unpackage\dist\build\web
+        run: dir
 
       # 4. 部署到服务器（使用 rsync）
       - name: Deploy to server
