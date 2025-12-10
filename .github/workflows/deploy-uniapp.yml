@@ -1,0 +1,44 @@
+name: Build and Deploy UniApp (H5)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装 WINE，用于执行 Windows 的 cli.exe
+      - name: Install WINE
+        run: sudo apt-get update && sudo apt-get install -y wine
+
+      # 3. 下载你提供的 HBuilderX Windows 版（必须先上传到云存储，比如 OSS、COS、GitHub Releases）
+      # 假设你放到了 GitHub Releases 的下载链接
+      - name: Download HBuilderX
+        run: |
+          wget -O hbuilderx.zip "https://qiniu-ecdn.dcloud.net.cn/download/HBuilderX.4.87.2025121004.zip"
+          unzip hbuilderx.zip -d hbuilderx
+
+      # 4. 使用 wine 运行 HBuilderX CLI 构建 UniApp H5
+      - name: Build UniApp H5
+        run: |
+          wine ./hbuilderx/HBuilderX/cli.exe publish \
+            --platform h5 \
+            --project see-u-ui
+
+      # 5. 将构建后的 H5 dist 上传部署到服务器
+      - name: Deploy to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete --exclude=".*"
+          path: unpackage/dist/build/web/
+          remote_path: /www/wwwroot/demo.seeuui.cn/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SERVER_SSH_KEY }}
