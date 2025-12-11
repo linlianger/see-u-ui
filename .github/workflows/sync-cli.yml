@@ -24,19 +24,23 @@ jobs:
           path: target
           ref: main
 
-      # 3️⃣ 同步文件（排除必需的 Git 和 workflows）
-      - name: Sync all files
+      # 3️⃣ 删除 src/ 所有内容
+      - name: Clean target/src
         run: |
-          echo "开始同步所有文件..."
+          echo "清空 target/src/ ..."
+          rm -rf target/src/*
+          rm -rf target/src/.* 2>/dev/null || true
+          echo "清空完成"
 
-          rsync -av --delete \
-            --exclude '.git/' \
-            --exclude '.github/workflows/' \
-            source/ target/src/
+      # 4️⃣ 拷贝源仓库文件到 target/src
+      - name: Copy all files
+        run: |
+          echo "开始拷贝源仓库文件..."
+          cp -r source/* target/src/
+          cp -r source/.* target/src/ 2>/dev/null || true
+          echo "拷贝完成"
 
-          echo "同步完成，准备提交..."
-
-      # 4️⃣ 提交并推送
+      # 5️⃣ 提交并推送
       - name: Commit and Push
         working-directory: target
         run: |
