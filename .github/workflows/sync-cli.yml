@@ -9,36 +9,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ 检出源仓库 see-u-ui
-      - name: Checkout Source Repo (see-u-ui)
+      # 1️⃣ Checkout 源仓库 see-u-ui
+      - name: Checkout source (see-u-ui)
         uses: actions/checkout@v4
         with:
-          path: source-repo
+          path: source
 
-      # 2️⃣ 检出目标仓库 see-u-ui-cli
-      - name: Checkout Target Repo (see-u-ui-cli)
+      # 2️⃣ Checkout 目标仓库 see-u-ui-cli
+      - name: Checkout target (see-u-ui-cli)
         uses: actions/checkout@v4
         with:
           repository: seeyouui/see-u-ui-cli
           token: ${{ secrets.SYNC_TOKEN }}
-          path: target-repo
+          path: target
           ref: main
 
-      # 3️⃣ 同步源仓库 → 目标仓库/src
-      - name: Sync ALL Files via Rsync
+      # 3️⃣ 同步文件（排除必需的 Git 和 workflows）
+      - name: Sync all files
         run: |
           echo "开始同步所有文件..."
 
-          # rsync 源：source-repo/
-          # 同步目标：target-repo/src/
-          # 注意：什么都不排除！
-          rsync -av --delete source-repo/ target-repo/src/
+          rsync -av --delete \
+            --exclude '.git/' \
+            --exclude '.github/workflows/' \
+            source/ target/src/
 
           echo "同步完成，准备提交..."
 
-      # 4️⃣ 提交并推送到 see-u-ui-cli
+      # 4️⃣ 提交并推送
       - name: Commit and Push
-        working-directory: target-repo
+        working-directory: target
         run: |
           git config user.name "GitHub Action Bot"
           git config user.email "action@github.com"
@@ -46,10 +46,10 @@ jobs:
           git add .
 
           if git diff --staged --quiet; then
-            echo "没有变化，跳过提交。"
-          else
-            echo "检测到变更，提交中..."
-            git commit -m "同步了：SeeYouUI $(date +'%Y-%m-%d %H:%M:%S')"
-            git push origin main
-            echo "推送成功！"
+            echo "没有变化。"
+            exit 0
           fi
+
+          git commit -m "同步 see-u-ui $(date +'%Y-%m-%d %H:%M:%S')"
+          git push origin main
+          echo "推送成功！"
