@@ -20,12 +20,12 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Sync ALL files into CLI/src (no exclusions)
+      - name: Sync ALL files into CLI/src (exclude only target-repo)
         run: |
           cd $GITHUB_WORKSPACE
 
-          # 同步所有文件到 src/（不排除任何内容）
           rsync -av --delete \
+            --exclude 'target-repo/' \
             ./ ./target-repo/src/
 
       - name: Commit & Push to see-u-ui-cli
