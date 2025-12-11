@@ -1,6 +1,6 @@
 <template>
   <view class="container">
-    <text class="title">按钮类型1</text>
+    <text class="title">按钮类型2</text>
     <view class="content">
       <see-button title="默认按钮" />
       <see-button title="主要按钮" type="primary" />
