@@ -2,39 +2,54 @@ name: Sync SeeYouUI to CLI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  sync:
+  sync-code:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout see-u-ui (source repo)
+      # 1️⃣ 检出源仓库 see-u-ui
+      - name: Checkout Source Repo (see-u-ui)
         uses: actions/checkout@v4
+        with:
+          path: source-repo
 
-      - name: Clone target repo see-u-ui-cli
+      # 2️⃣ 检出目标仓库 see-u-ui-cli
+      - name: Checkout Target Repo (see-u-ui-cli)
+        uses: actions/checkout@v4
+        with:
+          repository: seeyouui/see-u-ui-cli
+          token: ${{ secrets.SYNC_TOKEN }}
+          path: target-repo
+          ref: main
+
+      # 3️⃣ 同步源仓库 → 目标仓库/src
+      - name: Sync ALL Files via Rsync
         run: |
-          git clone https://github.com/seeyouui/see-u-ui-cli.git target-repo
-          cd target-repo
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          echo "开始同步所有文件..."
 
-      - name: Sync ALL files into CLI/src (exclude only target-repo)
+          # rsync 源：source-repo/
+          # 同步目标：target-repo/src/
+          # 注意：什么都不排除！
+          rsync -av --delete source-repo/ target-repo/src/
+
+          echo "同步完成，准备提交..."
+
+      # 4️⃣ 提交并推送到 see-u-ui-cli
+      - name: Commit and Push
+        working-directory: target-repo
         run: |
-          cd $GITHUB_WORKSPACE
+          git config user.name "GitHub Action Bot"
+          git config user.email "action@github.com"
 
-          rsync -av --delete \
-            --exclude 'target-repo/' \
-            ./ ./target-repo/src/
-
-      - name: Commit & Push to see-u-ui-cli
-        run: |
-          cd target-repo
           git add .
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            exit 0
+
+          if git diff --staged --quiet; then
+            echo "没有变化，跳过提交。"
+          else
+            echo "检测到变更，提交中..."
+            git commit -m "同步了：SeeYouUI $(date +'%Y-%m-%d %H:%M:%S')"
+            git push origin main
+            echo "推送成功！"
           fi
-          git commit -m "同步了：SeeYouUI $(date +'%Y-%m-%d %H:%M:%S')"
-          git push https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/seeyouui/see-u-ui-cli.git HEAD:main
