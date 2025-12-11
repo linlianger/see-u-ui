@@ -9,48 +9,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout 源仓库 see-u-ui
+      # 1️⃣ Checkout 源仓库 (see-u-ui) 到 'source' 文件夹
       - name: Checkout source (see-u-ui)
         uses: actions/checkout@v4
         with:
           path: source
 
-      # 2️⃣ Checkout 目标仓库 see-u-ui-cli
+      # 2️⃣ Checkout 目标仓库 (see-u-ui-cli) 到 'target' 文件夹
       - name: Checkout target (see-u-ui-cli)
         uses: actions/checkout@v4
         with:
           repository: seeyouui/see-u-ui-cli
-          token: ${{ secrets.SYNC_TOKEN }}
+          token: ${{ secrets.SYNC_TOKEN }} # 必须在仓库设置里配置这个 Token
           path: target
           ref: main
 
-      # 3️⃣ 删除 src/ 所有内容
-      - name: Clean target/src
+      # 3️⃣ 执行同步 (核心步骤)
+      - name: Sync files (Root -> src)
         run: |
-          echo "清空 target/src/ ..."
-          rm -rf target/src/*
-          rm -rf target/src/.* 2>/dev/null || true
-          echo "清空完成"
+          echo "正在确保目标目录 target/src 存在..."
+          mkdir -p target/src
 
-      # 4️⃣ 拷贝源仓库文件到 target/src
-      - name: Copy all files
-        run: |
-          echo "开始拷贝源仓库文件..."
-          cp -r source/* target/src/
-          cp -r source/.* target/src/ 2>/dev/null || true
-          echo "拷贝完成"
+          echo "开始同步：将 source/ 的所有内容同步到 target/src/ ..."
 
-      # 5️⃣ 提交并推送
+          # 使用 rsync 进行同步
+          # -a: 归档模式（保留权限、时间等）
+          # -v: 显示详细过程
+          # --delete: 删除 target/src 中多余的文件（实现“清空旧文件”的效果）
+          # --exclude: 排除 .git 目录，防止破坏目标仓库的 git 历史
+          rsync -av --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            source/ target/src/
+
+          echo "同步完成，文件结构已更新。"
+
+      # 4️⃣ 提交并推送到目标仓库
       - name: Commit and Push
         working-directory: target
         run: |
+          # 配置 git 用户信息
           git config user.name "GitHub Action Bot"
           git config user.email "action@github.com"
 
+          # 添加所有变更
           git add .
 
+          # 检查是否有变更，如果没有变更则退出，避免报错
           if git diff --staged --quiet; then
-            echo "没有变化。"
+            echo "检测到没有文件变化，跳过提交。"
             exit 0
           fi
 
