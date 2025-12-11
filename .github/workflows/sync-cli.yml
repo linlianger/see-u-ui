@@ -1,53 +1,64 @@
 name: Sync SeeYouUI to CLI
 
+# 1. 触发条件配置
 on:
   push:
     branches: [main]
+    # 这里去掉了 paths 限制，因为你要同步根目录所有文件，任何变动都应该触发
 
 jobs:
   sync-code:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout 源仓库 (see-u-ui) 到 'source' 文件夹
-      - name: Checkout source (see-u-ui)
+      # ----------------------------------------------------------------
+      # 第一步：检出（下载）源仓库代码 (see-u-ui)
+      # ----------------------------------------------------------------
+      - name: Checkout Source Repo (see-u-ui)
         uses: actions/checkout@v4
         with:
-          path: source
+          path: source-repo
 
-      # 2️⃣ Checkout 目标仓库 (see-u-ui-cli) 到 'target' 文件夹
-      - name: Checkout target (see-u-ui-cli)
+      # ----------------------------------------------------------------
+      # 第二步：检出（下载）目标仓库代码 (see-u-ui-cli)
+      # ----------------------------------------------------------------
+      - name: Checkout Target Repo (see-u-ui-cli)
         uses: actions/checkout@v4
         with:
-          repository: seeyouui/see-u-ui-cli
-          token: ${{ secrets.SYNC_TOKEN }} # 必须在仓库设置里配置这个 Token
-          path: target
+          repository: seeyouui/see-u-ui-cli # 修改：目标仓库
+          token: ${{ secrets.SYNC_TOKEN }} # 修改：Token 名称
+          path: target-repo
           ref: main
 
-      # 3️⃣ 执行同步 (核心步骤)
-      - name: Sync files (Root -> src)
+      # ----------------------------------------------------------------
+      # 第三步：同步代码 (核心逻辑：根目录 -> src)
+      # ----------------------------------------------------------------
+      - name: Sync Files via Rsync
         run: |
-          echo "正在确保目标目录 target/src 存在..."
-          mkdir -p target/src
+          echo "确保目标目录 src 存在..."
+          mkdir -p target-repo/src
 
-          echo "开始同步：将 source/ 的所有内容同步到 target/src/ ..."
+          echo "开始同步文件..."
 
-          # 使用 rsync 进行同步
-          # -a: 归档模式（保留权限、时间等）
-          # -v: 显示详细过程
-          # --delete: 删除 target/src 中多余的文件（实现“清空旧文件”的效果）
-          # --exclude: 排除 .git 目录，防止破坏目标仓库的 git 历史
+          # 核心修改说明：
+          # 1. source-repo/  --> 源仓库根目录（注意末尾斜杠，表示拷贝内容）
+          # 2. target-repo/src/ --> 目标仓库的 src 目录
+          # 3. --exclude: 必须排除 .git 和 .github，否则会把版本控制文件也拷进 src 里，导致混乱
+          # 4. --delete: 会删除 target-repo/src/ 中那些源仓库里没有的文件（实现清空旧文件效果）
+
           rsync -av --delete \
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude 'node_modules/' \
-            source/ target/src/
+            source-repo/ target-repo/src/
 
-          echo "同步完成，文件结构已更新。"
+          echo "文件同步完成，准备检查变更..."
 
-      # 4️⃣ 提交并推送到目标仓库
+      # ----------------------------------------------------------------
+      # 第四步：提交并推送
+      # ----------------------------------------------------------------
       - name: Commit and Push
-        working-directory: target
+        working-directory: target-repo
         run: |
           # 配置 git 用户信息
           git config user.name "GitHub Action Bot"
@@ -56,12 +67,14 @@ jobs:
           # 添加所有变更
           git add .
 
-          # 检查是否有变更，如果没有变更则退出，避免报错
+          # 检查是否有变更
           if git diff --staged --quiet; then
-            echo "检测到没有文件变化，跳过提交。"
-            exit 0
+            echo "检测到没有文件发生变化，跳过提交步骤。"
+          else
+            echo "检测到文件变更，正在提交..."
+            git commit -m "同步SeeYouUI $(date +'%Y-%m-%d %H:%M:%S')"
+            
+            # 推送
+            git push origin main
+            echo "推送成功！"
           fi
-
-          git commit -m "同步 see-u-ui $(date +'%Y-%m-%d %H:%M:%S')"
-          git push origin main
-          echo "推送成功！"
