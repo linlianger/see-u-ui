@@ -1,0 +1,40 @@
+name: Sync SeeYouUI to CLI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout see-u-ui (source repo)
+        uses: actions/checkout@v4
+
+      - name: Clone target repo see-u-ui-cli
+        run: |
+          git clone https://github.com/seeyouui/see-u-ui-cli.git target-repo
+          cd target-repo
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Copy all files from see-u-ui → see-u-ui-cli/src
+        run: |
+          rm -rf target-repo/src/*
+          cp -r ./* target-repo/src/
+
+      - name: Commit & Push to see-u-ui-cli
+        run: |
+          cd target-repo
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "同步了：SeeYouUI $(date +'%Y-%m-%d %H:%M:%S')"
+          git push https://github.com/seeyouui/see-u-ui-cli.git HEAD:main
+        env:
+          GIT_ASKPASS: /bin/echo
+          GIT_PASSWORD: ${{ secrets.SYNC_TOKEN }}
