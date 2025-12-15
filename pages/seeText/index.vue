@@ -30,8 +30,9 @@
 			<see-text text="一千块：" />
 			<see-text text="1000" type="primary" mode="price" />
 			<view class="gap-12"></view>
-			<see-text text="好多钱：" />
-			<see-text :text="9999999999999.99" type="primary" mode="price" />
+			<see-text text="金额滚动：" />
+			<see-text :text="price" isCountUp mode="price" type="primary" :size="16" />
+			<see-button size="mini" isRipple @click="price++">点我+1</see-button>
 			<view class="gap-12"></view>
 		</view>
 		<text class="title">日期格式化</text>
@@ -96,6 +97,8 @@ onUnmounted(() => {
 		timer = null;
 	}
 });
+
+const price = ref(9999999999999.99)
 </script>
 
 <style lang="scss" scoped>
