@@ -32,7 +32,7 @@
 			<view class="gap-12"></view>
 			<see-text text="金额滚动：" />
 			<see-text :text="price" isCountUp mode="price" type="primary" :size="16" />
-			<see-button size="mini" isRipple @click="price++">点我+1</see-button>
+			<see-button size="mini" isRipple @tap="price++">点我+1</see-button>
 			<view class="gap-12"></view>
 		</view>
 		<text class="title">日期格式化</text>
@@ -78,17 +78,27 @@
 			<see-text text="当前时间 - 800天：" />
 			<see-text type="primary" mode="timeago" :date="Date.now() - 800 * 86400 * 1000" date-format="YYYY-MM-DD" />
 		</view>
+		<text class="title">打字机效果</text>
+		<view class="content flex-start">
+			<see-text ref="textRef" mode="text" :text="message" :isTextUp="true" :textUp="{ speed: 120, autoStart: false, showCursor: true }" @onTextUpComplete="handleComplete" />
+			<view class="gap-12"></view>
+			<view class="flex-sb">
+				<see-button isRipple title="开始打字" @click="start" />
+				<see-button isRipple :title="isStop ? '暂停' : '继续'" :type="isStop ? 'warning' : 'primary'" :isDisabled="!isStart" @tap="stopResume" />
+				<see-button @click="showAll" title="立即显示" />
+			</view>
+		</view>
 	</view>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const currentTime = ref(new Date());
 let timer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
-	timer = setInterval(() => currentTime.value = new Date(), 30);
+	timer = setInterval(() => (currentTime.value = new Date()), 30);
 });
 
 onUnmounted(() => {
@@ -98,16 +108,49 @@ onUnmounted(() => {
 	}
 });
 
-const price = ref(9999999999999.99)
+const price = ref(9999999999999.99);
+
+/** 打字机效果 */
+const message = ref('这是一段模拟AI输出的文本，会一个字一个字地显示出来。');
+const textRef = ref();
+const isStop = ref(true);
+const isStart = ref(false);
+
+const start = () => {
+	textRef.value?.startTyping();
+	isStart.value = true;
+	isStop.value = true;
+};
+
+const stopResume = () => {
+	if (isStop.value) {
+		textRef.value?.stopTyping();
+	} else textRef.value?.resumeTyping();
+	isStop.value = !isStop.value;
+};
+
+const showAll = () => {
+	textRef.value?.showAllText();
+};
+
+const handleComplete = () => {
+	console.log('打字完成！');
+	isStart.value = false;
+};
 </script>
 
 <style lang="scss" scoped>
-.gap-12{
+.gap-12 {
 	width: 100%;
 	height: 12px;
 }
-.flex-start{
+.flex-start {
 	justify-content: flex-start !important;
+}
+.flex-sb {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
 }
 .container {
 	width: 100vw;
